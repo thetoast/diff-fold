@@ -1,8 +1,8 @@
 "-------------------------------------------------------------------------------
-" File: diff.vim
+" File: diff_fold.vim
 " Description: Folding script for Mercurial diffs
 "
-" Version: 0.1
+" Version: 0.2
 "
 " Author: Ryan Mechelke <rfmechelke AT gmail DOT com>
 "
@@ -21,30 +21,45 @@
 "   * Doesn't work with 'hg export' yet
 "   * Hasn't really been tested with much beyond above use cases
 "
+" Changelog:
+"   0.2 - (2010/10/1):
+"       * changed all "exec normal" calls to "normal!"
+"       * checking for existence of final hunks/diffs/changesets to avoid
+"         double-folding
+"       * foldtext now being set with "setlocal"
+"
+"   0.1 - (2010/9/30):
+"       * Initial upload to vimscripts and bitbucket
+"
+" Thanks:
+"   Ingo for the 0.2 patch!
+"
 "-------------------------------------------------------------------------------
 
 " get number of lines
-exec "normal G"
+normal! G
 let last_line=line('.')
-exec "normal gg"
+normal! gg
 
 " fold all hunks
 try
     g/^@@/.,/\(\nchangeset\|^diff\|^@@\)/-1 fold
 catch /E16/
 endtry
-exec "normal G"
-call search('^@@', 'b')
-exec ".," . last_line . "fold"
+normal! G
+if search('^@@', 'b')
+    exec ".," . last_line . "fold"
+endif
 
 " fold file diffs
 try
     g/^diff/.,/\(\nchangeset\|^diff\)/-1 fold
 catch /E16/
 endtry
-exec "normal G"
-call search('^diff', 'b')
-exec ".," . last_line . "fold"
+normal! G
+if search('^diff', 'b')
+    exec ".," . last_line . "fold"
+endif
 
 " fold changesets (if any)
 if search('^changeset', '')
@@ -52,9 +67,10 @@ if search('^changeset', '')
         g/^changeset/.,/\nchangeset/-1 fold
     catch /E16/
     endtry
-    exec "normal G"
-    call search('^changeset', 'b')
-    exec ".," . last_line . "fold"
+    normal! G
+    if search('^changeset', 'b')
+        exec ".," . last_line . "fold"
+    endif
 endif
 
 noh
@@ -82,4 +98,4 @@ function! MyDiffFoldText()
 
     return foldtext
 endfunction
-set foldtext=MyDiffFoldText()
+setlocal foldtext=MyDiffFoldText()
