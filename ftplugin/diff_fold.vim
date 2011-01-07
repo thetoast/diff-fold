@@ -1,8 +1,8 @@
 "-------------------------------------------------------------------------------
-" File: diff_fold.vim
+" File: ftplugin/diff_fold.vim
 " Description: Folding script for Mercurial diffs
 "
-" Version: 0.2
+" Version: 0.3
 "
 " Author: Ryan Mechelke <rfmechelke AT gmail DOT com>
 "
@@ -13,15 +13,20 @@
 "   hunks folded nicely together.
 "
 "   Some examples:
-"       hg in --patch | vim - -c "setlocal ft=diff"
-"       hg diff | gvim -
+"       hg in --patch | vim -
+"       hg diff | vim -
 "       hg diff -r 12 -r 13 | vim -
+"       hg export -r 12: | vim -
+"       hg log --patch src\somefile.cpp | vim -
 "
-" Issues:
-"   * Doesn't work with 'hg export' yet
-"   * Hasn't really been tested with much beyond above use cases
+" changelog:
+"   0.3 - (2011/1/6):
+"       * added an ftdetect script so that mercurial output is automatically
+"         detected.  "setlocal ft=diff" is no longer needed.
+"       * added support for folding changsets which are output from the export
+"         command.
+"       * handling some additional errors which pop up when script is run
 "
-" Changelog:
 "   0.2 - (2010/10/1):
 "       * changed all "exec normal" calls to "normal!"
 "       * checking for existence of final hunks/diffs/changesets to avoid
@@ -36,6 +41,11 @@
 "
 "-------------------------------------------------------------------------------
 
+if exists("b:did_ftplugin")
+    finish
+endif
+let b:did_ftplugin = 1
+
 " get number of lines
 normal! G
 let last_line=line('.')
@@ -43,7 +53,7 @@ normal! gg
 
 " fold all hunks
 try
-    g/^@@/.,/\(\nchangeset\|^diff\|^@@\)/-1 fold
+    g/^@@/.,/\(^# HG changeset\|\nchangeset\|^diff\|^@@\)/-1 fold
 catch /E16/
 endtry
 normal! G
@@ -53,7 +63,7 @@ endif
 
 " fold file diffs
 try
-    g/^diff/.,/\(\nchangeset\|^diff\)/-1 fold
+    g/^diff/.,/\(^# HG changeset\|\nchangeset\|^diff\)/-1 fold
 catch /E16/
 endtry
 normal! G
@@ -62,13 +72,13 @@ if search('^diff', 'b')
 endif
 
 " fold changesets (if any)
-if search('^changeset', '')
+if search('^\(changeset\|^# HG changeset\)', '')
     try
-        g/^changeset/.,/\nchangeset/-1 fold
+        g/^\(changeset\|^# HG changeset\)/.,/\(\nchangeset\|# HG changeset\)/-1 fold
     catch /E16/
     endtry
     normal! G
-    if search('^changeset', 'b')
+    if search('^\(changeset\|^# HG changeset\)', 'b')
         exec ".," . last_line . "fold"
     endif
 endif
