@@ -53,7 +53,7 @@ normal! gg
 
 " fold all hunks
 try
-    g/^@@/.,/\(^# HG changeset\|\nchangeset\|^diff\|^@@\)/-1 fold
+    silent g/^@@/.,/\(^# HG changeset\|\nchangeset\|^diff\|^@@\)/-1 fold
 catch /E16/
 endtry
 normal! G
@@ -63,7 +63,7 @@ endif
 
 " fold file diffs
 try
-    g/^diff/.,/\(^# HG changeset\|\nchangeset\|^diff\)/-1 fold
+    silent g/^diff/.,/\(^# HG changeset\|\nchangeset\|^diff\)/-1 fold
 catch /E16/
 endtry
 normal! G
@@ -74,8 +74,9 @@ endif
 " fold changesets (if any)
 if search('^\(changeset\|^# HG changeset\)', '')
     try
-        g/^\(changeset\|^# HG changeset\)/.,/\(\nchangeset\|# HG changeset\)/-1 fold
+        silent g/^\(changeset\|^# HG changeset\)/.,/\(\nchangeset\|# HG changeset\)/-1 fold
     catch /E16/
+    catch /E486/
     endtry
     normal! G
     if search('^\(changeset\|^# HG changeset\)', 'b')

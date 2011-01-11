@@ -29,6 +29,13 @@ function s:diff_filetype_check()
     endif
 
     " detect for mercurial output
+    if getline(1) =~ '^comparing with.*'
+        if getline(2) =~ '^searching for changes$'
+            if getline(3) =~ '^changeset.*'
+                setfiletype diff
+            endif
+        endif
+    endif
     if getline(1) =~ '^changeset.*'
         setfiletype diff
     endif
