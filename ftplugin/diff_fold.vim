@@ -2,7 +2,7 @@
 " File: ftplugin/diff_fold.vim
 " Description: Folding script for Mercurial diffs
 "
-" Version: 0.3
+" Version: 0.3.1
 "
 " Author: Ryan Mechelke <rfmechelke AT gmail DOT com>
 "
@@ -20,6 +20,10 @@
 "       hg log --patch src\somefile.cpp | vim -
 "
 " changelog:
+"   0.3.1 - (2011/1/11):
+"       * fixed a bug with folding the 'hg export' style changesets
+"       * made the global commands silent
+"       * added better foldtext for 'hg export' style changesets
 "   0.3 - (2011/1/6):
 "       * added an ftdetect script so that mercurial output is automatically
 "         detected.  "setlocal ft=diff" is no longer needed.
