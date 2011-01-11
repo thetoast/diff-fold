@@ -24,6 +24,7 @@
 "       * fixed a bug with folding the 'hg export' style changesets
 "       * made the global commands silent
 "       * added better foldtext for 'hg export' style changesets
+"
 "   0.3 - (2011/1/6):
 "       * added an ftdetect script so that mercurial output is automatically
 "         detected.  "setlocal ft=diff" is no longer needed.
