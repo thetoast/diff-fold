@@ -72,9 +72,9 @@ if search('^diff', 'b')
 endif
 
 " fold changesets (if any)
-if search('^\(changeset\|^# HG changeset\)', '')
+if search('^\(changeset\|# HG changeset\)', '')
     try
-        silent g/^\(changeset\|^# HG changeset\)/.,/\(\nchangeset\|# HG changeset\)/-1 fold
+        silent g/^\(changeset\|# HG changeset\)/.,/\(\nchangeset\|^# HG changeset\)/-1 fold
     catch /E16/
     catch /E486/
     endtry
@@ -93,6 +93,10 @@ function! MyDiffFoldText()
 
     if line =~ "^changeset.*"
         let foldtext .= substitute(line, "\:   ", " ", "")
+    elseif line =~ "^# HG changeset.*"
+        let foldtext .= "changeset "
+        let node = getline(v:foldstart + 3)
+        let foldtext .= substitute(node, "\# Node ID ", "", "")
     elseif line =~ "^diff.*"
         if (line =~ "diff -r")
             let matches = matchlist(line, 'diff -r [a-z0-9]\+ \(.*\)$')
