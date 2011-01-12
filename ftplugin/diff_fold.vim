@@ -77,7 +77,7 @@ if search('^diff', 'b')
 endif
 
 " fold changesets (if any)
-if search('^\(changeset\|# HG changeset\)', '')
+if exists('b:diff_style') && (b:diff_style == "hg")
     try
         silent g/^\(changeset\|# HG changeset\)/.,/\(\nchangeset\|^# HG changeset\)/-1 fold
     catch /E16/

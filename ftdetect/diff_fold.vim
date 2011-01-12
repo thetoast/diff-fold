@@ -14,7 +14,7 @@ if did_filetype()
     finish
 endif
 
-au BufEnter * call <SID>diff_filetype_check()
+au BufRead,StdinReadPost * call <SID>diff_filetype_check()
 
 if exists("s:run_once")
     finish
@@ -25,21 +25,24 @@ function s:diff_filetype_check()
 
     " check one more time to see if filetype has been done
     if did_filetype()
-        finish
+        return
     endif
 
     " detect for mercurial output
     if getline(1) =~ '^comparing with.*'
         if getline(2) =~ '^searching for changes$'
             if getline(3) =~ '^changeset.*'
+                let b:diff_style="hg"
                 setfiletype diff
             endif
         endif
     endif
     if getline(1) =~ '^changeset.*'
+        let b:diff_style="hg"
         setfiletype diff
     endif
     if getline(1) =~ '# HG changeset.*'
+        let b:diff_style="hg"
         setfiletype diff
     endif
 endfunction
