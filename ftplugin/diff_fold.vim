@@ -92,7 +92,7 @@ endif
 noh
 
 " make the foldtext more friendly
-function! MyDiffFoldText()
+function MyDiffFoldText()
     let foldtext = "+" . v:folddashes . " "
     let line = getline(v:foldstart)
 
@@ -119,3 +119,114 @@ function! MyDiffFoldText()
     return foldtext
 endfunction
 setlocal foldtext=MyDiffFoldText()
+
+function DiffNavFoldText()
+    let line = getline(v:foldstart)
+    let line = substitute(line, '^-', '+', '')
+    let foldtext = line
+    let foldtext .= " (". (v:foldend - v:foldstart) . " files) "
+    let textlen = len(foldtext)
+    let winwidth = winwidth(0)
+    return foldtext . repeat(' ', winwidth - textlen)
+endfunction
+
+function s:RefreshNavPane()
+    normal! ggdG
+    normal! I --== Diff Navigator ==--
+    normal! o
+    for line in getbufline(b:diff_buffer, 1, '$')
+        if line =~ "^changeset:.*"
+            let b:has_csets=1
+            normal! o
+            let cset = substitute(line, 'changeset:\s\+', 'changeset ', '')
+            exec "normal! o- " . cset
+        elseif line =~ "^diff.*"
+            let filename = substitute(line, '^diff.*a/\(.*\) b/.*$', '\1', '')
+            exec "normal! o |- " . filename
+        endif
+    endfor
+    try
+        silent g/^- changeset/.,/^$/-1 fold
+    catch /E16/
+    endtry
+    normal! G
+    call search('^- changeset', 'b')
+    .,$ fold
+    call search('^- changeset')
+endfunction
+
+function s:CreateNavPane()
+    let bufnum = bufnr('%')
+
+    leftabove vert new
+    set buftype=nofile
+    file [Diff Nav]
+    set nonu
+
+    let navbuf = bufnr('%')
+
+    let b:diff_buffer=bufnum
+    call setbufvar(bufnum, 'diff_nav_buffer', navbuf)
+
+    setlocal foldtext=DiffNavFoldText()
+
+    setfiletype diffnav
+
+    vert resize 50
+
+    nno <buffer> o za
+    nno <buffer> O maggvGzo'a
+    nno <buffer> C maggVGzc'a
+    nno <buffer> <CR> :call <SID>GoToDiffItem()<CR>
+
+    call s:RefreshNavPane()
+endfunction
+
+function s:DisplayNavPane()
+    if !exists('b:diff_nav_buffer')
+        call s:CreateNavPane()
+    else
+        wincmd h
+        call s:RefreshNavPane()
+    endif
+endfunction
+
+function s:GoToDiffItem()
+    match none
+    let line = getline('.')
+    if line =~ "^[-+] changeset .*"
+        exec 'match DiffNavSelected /\%'.line('.').'l/'
+        let cset = substitute(line, '^[-+] changeset \(.*\)$', '\1', '')
+        normal! zo
+        wincmd l
+        call search(cset, '')
+        noh
+        normal! zO
+    elseif line =~ "^ |- .*"
+        exec 'match DiffNavSelected /\%'.line('.').'l/'
+        let file = substitute(line, '^ |- \(.*\)$', '\1', '')
+        if exists('b:has_csets')
+            normal! ma
+            while !exists('cset')
+                normal! k
+                let line = getline('.')
+                if line =~ "^[-+] changeset .*"
+                    let cset = substitute(line, '^[-+] changeset \(.*\)$', '\1', '')
+                endif
+            endwhile
+            normal! 'a
+        endif
+        wincmd l
+        if exists('b:has_csets')
+            call search(cset, '')
+        endif
+        call search("^diff.*" . file, '')
+        normal! zO
+    endif
+endfunction
+
+if !hasmapto('<Plug>DisplayNavPane')
+    map <unique> <leader>nav <Plug>DiffFoldNav
+endif
+
+noremap <unique> <Plug>DiffFoldNav :call <SID>DisplayNavPane()<CR>
