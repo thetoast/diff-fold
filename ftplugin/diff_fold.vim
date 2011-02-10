@@ -2,7 +2,7 @@
 " File: ftplugin/diff_fold.vim
 " Description: Folding script for Mercurial diffs
 "
-" Version: 0.3.1
+" Version: 0.4
 "
 " Author: Ryan Mechelke <rfmechelke AT gmail DOT com>
 "
@@ -10,7 +10,9 @@
 "
 " Usage:
 "   Pipe various Mercurial diff output to vim and see changesets, files, and
-"   hunks folded nicely together.
+"   hunks folded nicely together.  In addition to providing folding of diff
+"   text, diff_fold also provides a navigation pane which you can use to more
+"   easily navigate large diffs.
 "
 "   Some examples:
 "       hg in --patch | vim -
@@ -19,7 +21,21 @@
 "       hg export -r 12: | vim -
 "       hg log --patch src\somefile.cpp | vim -
 "
+"   Navigation pane usage:
+"       
+"       The keybinding <Leader>nav will bring up the navigation pane.  You can
+"       use the 'Enter' or 'v' keys to either go to, or view whole changsets
+"       or files in the Diff View
+"
+"       If you don't like the default mapping, you can map a new one as
+"       follows:
+"           map {newmap} <Plug>DiffFoldNav
+"
 " changelog:
+"   0.4 - (2011/2/10):
+"       * added a navigation pane for easier navigating of large diffs
+"       * added syntax highlighting for changeset details
+"
 "   0.3.1 - (2011/1/11):
 "       * fixed a bug with folding the 'hg export' style changesets
 "       * made the global commands silent
