@@ -51,6 +51,10 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
+" Folding Code {{{
+setlocal buftype=nofile
+file [Diff View]
+
 " get number of lines
 normal! G
 let last_line=line('.')
@@ -90,9 +94,10 @@ if exists('b:diff_style') && (b:diff_style == "hg")
 endif
 
 noh
+" End Folding Code }}}
 
-" make the foldtext more friendly
-function MyDiffFoldText()
+" Fold Text Functions {{{
+function DiffFoldText()
     let foldtext = "+" . v:folddashes . " "
     let line = getline(v:foldstart)
 
@@ -118,7 +123,7 @@ function MyDiffFoldText()
 
     return foldtext
 endfunction
-setlocal foldtext=MyDiffFoldText()
+setlocal foldtext=DiffFoldText()
 
 function DiffNavFoldText()
     let line = getline(v:foldstart)
@@ -129,11 +134,15 @@ function DiffNavFoldText()
     let winwidth = winwidth(0)
     return foldtext . repeat(' ', winwidth - textlen)
 endfunction
+" End Fold Text Functions }}}
 
+" Navigation Pane Functions {{{
 function s:RefreshNavPane()
     normal! ggdG
     normal! I --== Diff Navigator ==--
     normal! o
+    normal! o" Press '?' for help
+
     for line in getbufline(b:diff_buffer, 1, '$')
         if line =~ "^changeset:.*"
             let b:has_csets=1
@@ -168,6 +177,8 @@ function s:CreateNavPane()
     let b:diff_buffer=bufnum
     call setbufvar(bufnum, 'diff_nav_buffer', navbuf)
 
+    let b:help_open=0
+
     setlocal foldtext=DiffNavFoldText()
 
     setfiletype diffnav
@@ -177,9 +188,35 @@ function s:CreateNavPane()
     nno <buffer> o za
     nno <buffer> O maggvGzo'a
     nno <buffer> C maggVGzc'a
-    nno <buffer> <CR> :call <SID>GoToDiffItem()<CR>
+    nno <buffer> v :call <SID>GoToDiffItem(0)<CR>
+    nno <buffer> <CR> :call <SID>GoToDiffItem(1)<CR>
+    nno <buffer> ? :call <SID>ShowHelp()<CR>
 
     call s:RefreshNavPane()
+endfunction
+
+function s:ShowHelp()
+    normal! ma
+
+    if !b:help_open
+        normal! 3Gdd
+        normal! O"
+        normal! o" Key Mappings:
+        normal! o"     o     -- Open/Close fold
+        normal! o"     O     -- Open all folds
+        normal! o"     C     -- Close all folds
+        normal! o"     v     -- View item in Diff View
+        normal! o"     Enter -- Go to item in Diff View
+        normal! o"     ?     -- Open/Close help
+        normal! o"
+        let b:help_open=1
+    else
+        normal! 3Gd8j
+        normal! O" Press '?' for help
+        let b:help_open=0
+    endif
+
+    normal! 'a
 endfunction
 
 function s:DisplayNavPane()
@@ -191,7 +228,7 @@ function s:DisplayNavPane()
     endif
 endfunction
 
-function s:GoToDiffItem()
+function s:GoToDiffItem(focus_item)
     match none
     let line = getline('.')
     if line =~ "^[-+] changeset .*"
@@ -199,9 +236,9 @@ function s:GoToDiffItem()
         let cset = substitute(line, '^[-+] changeset \(.*\)$', '\1', '')
         normal! zo
         wincmd l
+        setlocal foldlevel=0
         call search(cset, '')
         noh
-        normal! zO
     elseif line =~ "^ |- .*"
         exec 'match DiffNavSelected /\%'.line('.').'l/'
         let file = substitute(line, '^ |- \(.*\)$', '\1', '')
@@ -217,16 +254,29 @@ function s:GoToDiffItem()
             normal! 'a
         endif
         wincmd l
+        setlocal foldlevel=0
         if exists('b:has_csets')
             call search(cset, '')
         endif
         call search("^diff.*" . file, '')
-        normal! zO
+        if !a:focus_item
+            normal! zo
+        endif
+    endif
+
+    normal! zO
+
+    if !a:focus_item
+        wincmd h
     endif
 endfunction
+" End Navigation Pane Functions }}}
 
+" Mappings {{{
 if !hasmapto('<Plug>DisplayNavPane')
     map <unique> <leader>nav <Plug>DiffFoldNav
 endif
-
 noremap <unique> <Plug>DiffFoldNav :call <SID>DisplayNavPane()<CR>
+" End Mappings }}}
+
+" vim: fdm=marker

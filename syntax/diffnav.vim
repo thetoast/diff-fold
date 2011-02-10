@@ -4,6 +4,7 @@ syn match DiffNavTreePart "^ |- " nextgroup=DiffNavFilename
 syn keyword DiffNavCsetLabel changeset nextgroup=DiffNavCset
 syn match DiffNavCset ".*" contained
 syn match DiffNavFilename ".*" contained
+syn match Comment '^".*'
 
 highlight DiffNavTitle guifg=lightblue gui=bold
 highlight DiffNavTreePart guifg=darkgrey gui=bold
