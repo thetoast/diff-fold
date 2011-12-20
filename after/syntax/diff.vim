@@ -1,10 +1,3 @@
-
-syn match HgChangesetDetails "^changeset:.*"
-syn match HgChangesetDetails "^user:.*"
-syn match HgChangesetDetails "^date:.*"
-syn match HgChangesetDetails "^summary:.*"
-syn match HgChangesetDetails "^tag:.*"
-syn match HgChangesetDetails "^parent:.*"
-syn match HgChangesetDetails "^branch:.*"
-
-highlight link HgChangesetDetails Comment
+set foldmethod=syntax
+syn region diffFileFold  start=/^diff/ end=/^diff/me=s-1  keepend transparent fold 
+syn region diffHunkFold  start=/^@@/ end=/^@@/me=s-1  keepend transparent fold 
