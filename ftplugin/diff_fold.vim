@@ -62,10 +62,11 @@
 "
 "-------------------------------------------------------------------------------
 
-if exists("b:did_ftplugin")
+if exists("b:did_ftplugin") || exists('g:loaded_diff_fold')
     finish
 endif
 let b:did_ftplugin = 1
+let g:loaded_diff_fold = 1
 
 " Folding Code {{{
 setlocal buftype=nofile
